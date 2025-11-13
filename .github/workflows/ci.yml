@@ -93,13 +93,13 @@ jobs:
         distribution: 'temurin'
         cache: maven
     
-    - name: Build project
-      run: mvn -B clean compile
-    
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
         languages: java
+    
+    - name: Build project
+      run: mvn -B clean compile
     
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3

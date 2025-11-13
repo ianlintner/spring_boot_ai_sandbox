@@ -11,6 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class ScoringService {
 
+  // TODO: Consider implementing a cleanup strategy (TTL-based eviction, LRU cache)
+  // to prevent unbounded memory growth in long-running applications
   private final Map<String, ScoringStatus> statusStore = new ConcurrentHashMap<>();
 
   public String submitForScoring(ScoringRequest request) {
@@ -53,7 +55,8 @@ public class ScoringService {
   private double calculateScore(ScoringRequest request) {
     // Simple scoring logic based on message count and criteria
     int messageCount = request.getMessages().size();
-    String criteria = request.getScoringCriteria().toLowerCase();
+    String criteria =
+        (request.getScoringCriteria() != null ? request.getScoringCriteria() : "").toLowerCase();
 
     double baseScore = messageCount * 10.0;
 

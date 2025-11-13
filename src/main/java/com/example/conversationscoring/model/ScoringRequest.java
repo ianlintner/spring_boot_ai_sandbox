@@ -1,10 +1,19 @@
 package com.example.conversationscoring.model;
 
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+
 import java.util.List;
 
 public class ScoringRequest {
   private String id;
+
+  @NotNull(message = "Messages list cannot be null")
+  @NotEmpty(message = "Messages list cannot be empty")
   private List<ConversationMessage> messages;
+
+  @NotNull(message = "Scoring criteria cannot be null")
+  @NotEmpty(message = "Scoring criteria cannot be empty")
   private String scoringCriteria;
 
   public ScoringRequest() {}

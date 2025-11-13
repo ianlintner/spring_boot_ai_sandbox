@@ -4,7 +4,7 @@ import com.example.conversationscoring.model.ScoringRequest;
 import com.example.conversationscoring.model.ScoringStatus;
 import com.example.conversationscoring.queue.MessageQueueService;
 import com.example.conversationscoring.service.ScoringService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,14 +16,17 @@ import java.util.Map;
 @RequestMapping("/api/scoring")
 public class ScoringController {
 
-  @Autowired
-  private ScoringService scoringService;
+  private final ScoringService scoringService;
+  private final MessageQueueService messageQueueService;
 
-  @Autowired
-  private MessageQueueService messageQueueService;
+  public ScoringController(ScoringService scoringService, MessageQueueService messageQueueService) {
+    this.scoringService = scoringService;
+    this.messageQueueService = messageQueueService;
+  }
 
   @PostMapping("/submit")
-  public ResponseEntity<Map<String, String>> submitForScoring(@RequestBody ScoringRequest request) {
+  public ResponseEntity<Map<String, String>> submitForScoring(
+      @Valid @RequestBody ScoringRequest request) {
     try {
       // Generate ID and store initial status
       String id = scoringService.submitForScoring(request);

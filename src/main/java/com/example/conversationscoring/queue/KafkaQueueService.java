@@ -5,7 +5,8 @@ import com.example.conversationscoring.service.ScoringService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -15,17 +16,17 @@ import org.springframework.stereotype.Service;
 @ConditionalOnProperty(name = "queue.type", havingValue = "kafka")
 public class KafkaQueueService implements MessageQueueService {
 
+  private static final Logger logger = LoggerFactory.getLogger(KafkaQueueService.class);
   private static final String TOPIC = "scoring-requests";
 
-  @Autowired
-  private KafkaTemplate<String, String> kafkaTemplate;
-
-  @Autowired
-  private ScoringService scoringService;
-
+  private final KafkaTemplate<String, String> kafkaTemplate;
+  private final ScoringService scoringService;
   private final ObjectMapper objectMapper;
 
-  public KafkaQueueService() {
+  public KafkaQueueService(KafkaTemplate<String, String> kafkaTemplate,
+      ScoringService scoringService) {
+    this.kafkaTemplate = kafkaTemplate;
+    this.scoringService = scoringService;
     this.objectMapper = new ObjectMapper();
     this.objectMapper.registerModule(new JavaTimeModule());
   }
@@ -46,8 +47,7 @@ public class KafkaQueueService implements MessageQueueService {
       ScoringRequest request = objectMapper.readValue(message, ScoringRequest.class);
       scoringService.processScoring(request);
     } catch (Exception e) {
-      // Log error and continue processing
-      System.err.println("Error processing message: " + e.getMessage());
+      logger.error("Error processing message: {}", message, e);
     }
   }
 }

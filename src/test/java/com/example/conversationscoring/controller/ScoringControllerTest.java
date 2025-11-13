@@ -72,11 +72,11 @@ class ScoringControllerTest {
   }
 
   @Test
-    void testGetStatusNotFound() throws Exception {
-        when(scoringService.getStatus("non-existent-id")).thenReturn(null);
+  void testGetStatusNotFound() throws Exception {
+    when(scoringService.getStatus("non-existent-id")).thenReturn(null);
 
-        mockMvc.perform(get("/api/scoring/status/non-existent-id"))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.error").exists());
-    }
+    mockMvc.perform(get("/api/scoring/status/non-existent-id"))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.error").exists());
+  }
 }
