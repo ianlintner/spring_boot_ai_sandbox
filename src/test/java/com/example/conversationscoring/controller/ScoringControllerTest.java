@@ -27,53 +27,51 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(ScoringController.class)
 class ScoringControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+  @Autowired
+  private MockMvc mockMvc;
 
-    @MockBean
-    private ScoringService scoringService;
+  @MockBean
+  private ScoringService scoringService;
 
-    @MockBean
-    private MessageQueueService messageQueueService;
+  @MockBean
+  private MessageQueueService messageQueueService;
 
-    private final ObjectMapper objectMapper;
+  private final ObjectMapper objectMapper;
 
-    public ScoringControllerTest() {
-        this.objectMapper = new ObjectMapper();
-        this.objectMapper.registerModule(new JavaTimeModule());
-    }
+  public ScoringControllerTest() {
+    this.objectMapper = new ObjectMapper();
+    this.objectMapper.registerModule(new JavaTimeModule());
+  }
 
-    @Test
-    void testSubmitForScoring() throws Exception {
-        ConversationMessage message1 = new ConversationMessage("user", "Hello", LocalDateTime.now());
-        ConversationMessage message2 = new ConversationMessage("ai", "Hi there!", LocalDateTime.now());
-        
-        ScoringRequest request = new ScoringRequest(null, Arrays.asList(message1, message2), "quality");
+  @Test
+  void testSubmitForScoring() throws Exception {
+    ConversationMessage message1 = new ConversationMessage("user", "Hello", LocalDateTime.now());
+    ConversationMessage message2 = new ConversationMessage("ai", "Hi there!", LocalDateTime.now());
 
-        when(scoringService.submitForScoring(any())).thenReturn("test-id-123");
+    ScoringRequest request = new ScoringRequest(null, Arrays.asList(message1, message2), "quality");
 
-        mockMvc.perform(post("/api/scoring/submit")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value("test-id-123"))
-                .andExpect(jsonPath("$.message").value("Request submitted successfully"));
-    }
+    when(scoringService.submitForScoring(any())).thenReturn("test-id-123");
 
-    @Test
-    void testGetStatusFound() throws Exception {
-        ScoringStatus status = new ScoringStatus("test-id-123", "COMPLETED", 85.5, "Scoring completed");
-        
-        when(scoringService.getStatus("test-id-123")).thenReturn(status);
+    mockMvc
+        .perform(post("/api/scoring/submit").contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk()).andExpect(jsonPath("$.id").value("test-id-123"))
+        .andExpect(jsonPath("$.message").value("Request submitted successfully"));
+  }
 
-        mockMvc.perform(get("/api/scoring/status/test-id-123"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value("test-id-123"))
-                .andExpect(jsonPath("$.status").value("COMPLETED"))
-                .andExpect(jsonPath("$.score").value(85.5));
-    }
+  @Test
+  void testGetStatusFound() throws Exception {
+    ScoringStatus status = new ScoringStatus("test-id-123", "COMPLETED", 85.5, "Scoring completed");
 
-    @Test
+    when(scoringService.getStatus("test-id-123")).thenReturn(status);
+
+    mockMvc.perform(get("/api/scoring/status/test-id-123")).andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value("test-id-123"))
+        .andExpect(jsonPath("$.status").value("COMPLETED"))
+        .andExpect(jsonPath("$.score").value(85.5));
+  }
+
+  @Test
     void testGetStatusNotFound() throws Exception {
         when(scoringService.getStatus("non-existent-id")).thenReturn(null);
 

@@ -23,3 +23,13 @@ buildNumber.properties
 # OS
 .DS_Store
 Thumbs.db
+
+# Code quality reports
+dependency-check-report.html
+spotbugsXml.xml
+pmd.xml
+
+# Logs
+*.log
+logs/
+

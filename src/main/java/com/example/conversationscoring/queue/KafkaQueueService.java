@@ -15,39 +15,39 @@ import org.springframework.stereotype.Service;
 @ConditionalOnProperty(name = "queue.type", havingValue = "kafka")
 public class KafkaQueueService implements MessageQueueService {
 
-    private static final String TOPIC = "scoring-requests";
-    
-    @Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
-    
-    @Autowired
-    private ScoringService scoringService;
-    
-    private final ObjectMapper objectMapper;
-    
-    public KafkaQueueService() {
-        this.objectMapper = new ObjectMapper();
-        this.objectMapper.registerModule(new JavaTimeModule());
-    }
+  private static final String TOPIC = "scoring-requests";
 
-    @Override
-    public void sendMessage(ScoringRequest request) {
-        try {
-            String message = objectMapper.writeValueAsString(request);
-            kafkaTemplate.send(TOPIC, request.getId(), message);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to serialize message", e);
-        }
-    }
+  @Autowired
+  private KafkaTemplate<String, String> kafkaTemplate;
 
-    @KafkaListener(topics = TOPIC, groupId = "scoring-service")
-    public void consumeMessage(String message) {
-        try {
-            ScoringRequest request = objectMapper.readValue(message, ScoringRequest.class);
-            scoringService.processScoring(request);
-        } catch (Exception e) {
-            // Log error and continue processing
-            System.err.println("Error processing message: " + e.getMessage());
-        }
+  @Autowired
+  private ScoringService scoringService;
+
+  private final ObjectMapper objectMapper;
+
+  public KafkaQueueService() {
+    this.objectMapper = new ObjectMapper();
+    this.objectMapper.registerModule(new JavaTimeModule());
+  }
+
+  @Override
+  public void sendMessage(ScoringRequest request) {
+    try {
+      String message = objectMapper.writeValueAsString(request);
+      kafkaTemplate.send(TOPIC, request.getId(), message);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException("Failed to serialize message", e);
     }
+  }
+
+  @KafkaListener(topics = TOPIC, groupId = "scoring-service")
+  public void consumeMessage(String message) {
+    try {
+      ScoringRequest request = objectMapper.readValue(message, ScoringRequest.class);
+      scoringService.processScoring(request);
+    } catch (Exception e) {
+      // Log error and continue processing
+      System.err.println("Error processing message: " + e.getMessage());
+    }
+  }
 }

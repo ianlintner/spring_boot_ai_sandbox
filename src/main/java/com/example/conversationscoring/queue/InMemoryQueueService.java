@@ -15,38 +15,38 @@ import java.util.concurrent.LinkedBlockingQueue;
 @ConditionalOnProperty(name = "queue.type", havingValue = "memory", matchIfMissing = true)
 public class InMemoryQueueService implements MessageQueueService {
 
-    private final BlockingQueue<ScoringRequest> queue = new LinkedBlockingQueue<>();
-    private final ExecutorService executorService = Executors.newFixedThreadPool(5);
-    
-    @Autowired
-    private ScoringService scoringService;
+  private final BlockingQueue<ScoringRequest> queue = new LinkedBlockingQueue<>();
+  private final ExecutorService executorService = Executors.newFixedThreadPool(5);
 
-    public InMemoryQueueService() {
-        // Start consumer threads
-        for (int i = 0; i < 5; i++) {
-            executorService.submit(this::processMessages);
-        }
-    }
+  @Autowired
+  private ScoringService scoringService;
 
-    @Override
-    public void sendMessage(ScoringRequest request) {
-        try {
-            queue.put(request);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("Failed to send message to queue", e);
-        }
+  public InMemoryQueueService() {
+    // Start consumer threads
+    for (int i = 0; i < 5; i++) {
+      executorService.submit(this::processMessages);
     }
+  }
 
-    private void processMessages() {
-        while (!Thread.currentThread().isInterrupted()) {
-            try {
-                ScoringRequest request = queue.take();
-                scoringService.processScoring(request);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
-            }
-        }
+  @Override
+  public void sendMessage(ScoringRequest request) {
+    try {
+      queue.put(request);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new RuntimeException("Failed to send message to queue", e);
     }
+  }
+
+  private void processMessages() {
+    while (!Thread.currentThread().isInterrupted()) {
+      try {
+        ScoringRequest request = queue.take();
+        scoringService.processScoring(request);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        break;
+      }
+    }
+  }
 }

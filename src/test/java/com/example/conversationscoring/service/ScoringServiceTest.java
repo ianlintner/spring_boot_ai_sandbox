@@ -12,45 +12,45 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ScoringServiceTest {
 
-    private final ScoringService scoringService = new ScoringService();
+  private final ScoringService scoringService = new ScoringService();
 
-    @Test
-    void testSubmitForScoring() {
-        ConversationMessage message1 = new ConversationMessage("user", "Hello", LocalDateTime.now());
-        ConversationMessage message2 = new ConversationMessage("ai", "Hi there!", LocalDateTime.now());
-        
-        ScoringRequest request = new ScoringRequest(null, Arrays.asList(message1, message2), "quality");
+  @Test
+  void testSubmitForScoring() {
+    ConversationMessage message1 = new ConversationMessage("user", "Hello", LocalDateTime.now());
+    ConversationMessage message2 = new ConversationMessage("ai", "Hi there!", LocalDateTime.now());
 
-        String id = scoringService.submitForScoring(request);
+    ScoringRequest request = new ScoringRequest(null, Arrays.asList(message1, message2), "quality");
 
-        assertNotNull(id);
-        assertFalse(id.isEmpty());
-        
-        ScoringStatus status = scoringService.getStatus(id);
-        assertNotNull(status);
-        assertEquals("PENDING", status.getStatus());
-    }
+    String id = scoringService.submitForScoring(request);
 
-    @Test
-    void testProcessScoring() {
-        ConversationMessage message1 = new ConversationMessage("user", "Hello", LocalDateTime.now());
-        ConversationMessage message2 = new ConversationMessage("ai", "Hi there!", LocalDateTime.now());
-        
-        ScoringRequest request = new ScoringRequest(null, Arrays.asList(message1, message2), "quality");
+    assertNotNull(id);
+    assertFalse(id.isEmpty());
 
-        String id = scoringService.submitForScoring(request);
-        scoringService.processScoring(request);
+    ScoringStatus status = scoringService.getStatus(id);
+    assertNotNull(status);
+    assertEquals("PENDING", status.getStatus());
+  }
 
-        ScoringStatus status = scoringService.getStatus(id);
-        assertNotNull(status);
-        assertEquals("COMPLETED", status.getStatus());
-        assertNotNull(status.getScore());
-        assertTrue(status.getScore() > 0);
-    }
+  @Test
+  void testProcessScoring() {
+    ConversationMessage message1 = new ConversationMessage("user", "Hello", LocalDateTime.now());
+    ConversationMessage message2 = new ConversationMessage("ai", "Hi there!", LocalDateTime.now());
 
-    @Test
-    void testGetStatusNotFound() {
-        ScoringStatus status = scoringService.getStatus("non-existent-id");
-        assertNull(status);
-    }
+    ScoringRequest request = new ScoringRequest(null, Arrays.asList(message1, message2), "quality");
+
+    String id = scoringService.submitForScoring(request);
+    scoringService.processScoring(request);
+
+    ScoringStatus status = scoringService.getStatus(id);
+    assertNotNull(status);
+    assertEquals("COMPLETED", status.getStatus());
+    assertNotNull(status.getScore());
+    assertTrue(status.getScore() > 0);
+  }
+
+  @Test
+  void testGetStatusNotFound() {
+    ScoringStatus status = scoringService.getStatus("non-existent-id");
+    assertNull(status);
+  }
 }

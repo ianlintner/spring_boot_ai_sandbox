@@ -16,43 +16,43 @@ import java.util.Map;
 @RequestMapping("/api/scoring")
 public class ScoringController {
 
-    @Autowired
-    private ScoringService scoringService;
+  @Autowired
+  private ScoringService scoringService;
 
-    @Autowired
-    private MessageQueueService messageQueueService;
+  @Autowired
+  private MessageQueueService messageQueueService;
 
-    @PostMapping("/submit")
-    public ResponseEntity<Map<String, String>> submitForScoring(@RequestBody ScoringRequest request) {
-        try {
-            // Generate ID and store initial status
-            String id = scoringService.submitForScoring(request);
-            
-            // Send to queue for async processing
-            messageQueueService.sendMessage(request);
-            
-            Map<String, String> response = new HashMap<>();
-            response.put("id", id);
-            response.put("message", "Request submitted successfully");
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Failed to submit request: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
+  @PostMapping("/submit")
+  public ResponseEntity<Map<String, String>> submitForScoring(@RequestBody ScoringRequest request) {
+    try {
+      // Generate ID and store initial status
+      String id = scoringService.submitForScoring(request);
+
+      // Send to queue for async processing
+      messageQueueService.sendMessage(request);
+
+      Map<String, String> response = new HashMap<>();
+      response.put("id", id);
+      response.put("message", "Request submitted successfully");
+
+      return ResponseEntity.ok(response);
+    } catch (Exception e) {
+      Map<String, String> errorResponse = new HashMap<>();
+      errorResponse.put("error", "Failed to submit request: " + e.getMessage());
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    }
+  }
+
+  @GetMapping("/status/{id}")
+  public ResponseEntity<?> getStatus(@PathVariable String id) {
+    ScoringStatus status = scoringService.getStatus(id);
+
+    if (status == null) {
+      Map<String, String> errorResponse = new HashMap<>();
+      errorResponse.put("error", "No scoring request found with ID: " + id);
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
-    @GetMapping("/status/{id}")
-    public ResponseEntity<?> getStatus(@PathVariable String id) {
-        ScoringStatus status = scoringService.getStatus(id);
-        
-        if (status == null) {
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", "No scoring request found with ID: " + id);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
-        }
-        
-        return ResponseEntity.ok(status);
-    }
+    return ResponseEntity.ok(status);
+  }
 }

@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class ConversationScoringApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(ConversationScoringApplication.class, args);
-    }
+  public static void main(String[] args) {
+    SpringApplication.run(ConversationScoringApplication.class, args);
+  }
 }
